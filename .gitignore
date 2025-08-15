@@ -6,4 +6,4 @@
 
 # fajllat e konfigurimit te npm
 npm-debug.log*
-package-lock.json
+package-lock.jsongit add .
