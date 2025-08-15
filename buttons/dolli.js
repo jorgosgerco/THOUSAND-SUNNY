@@ -29,9 +29,6 @@ module.exports = {
     name: "dolli",
   },
   async execute(interaction) {
-    // Shtojmë këtë rresht, i cili menjëherë i përgjigjet Discord-it
-    await interaction.deferReply({ ephemeral: true }); // Bëjmë defer ephemeral që mesazhi i ardhshëm të jetë privat
-    
     const clicker = interaction.member;
     const customId = interaction.customId;
 
@@ -42,12 +39,11 @@ module.exports = {
       bountyUser = await interaction.guild.members.fetch(bountyUserId);
     } catch (e) {
       console.error("Nuk u gjet përdoruesi i bounty:", e);
-      return interaction.editReply({ content: "Nuk u gjet personi për të ngre dolli 😅" });
+      return interaction.reply({ content: "Nuk u gjet personi për të ngre dolli 😅", ephemeral: true });
     }
 
     if (clicker.id === bountyUser.id) {
-      // Përdorim editReply sepse `deferReply` ishte i vetëm
-      return interaction.editReply({ content: "Dikush tjetër duhet të ngre dolli për ty 🍺" });
+      return interaction.reply({ content: "Dikush tjetër duhet të ngre dolli për ty 🍺", ephemeral: true });
     }
 
     const randomIndex = Math.floor(Math.random() * dolliMessages.length);
@@ -57,7 +53,7 @@ module.exports = {
     await addBerries(clicker.id, 5);
     await addBerries(bountyUser.id, 5);
 
-    // Këtu, do të përdorim `followUp` sepse mesazhi është publik
-    await interaction.followUp({ content: message, ephemeral: false }); 
+    // Këtu, do të përdorim `reply` sepse mesazhi është publik
+    await interaction.reply({ content: message, ephemeral: false });
   },
 };
