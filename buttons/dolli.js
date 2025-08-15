@@ -39,21 +39,35 @@ module.exports = {
       bountyUser = await interaction.guild.members.fetch(bountyUserId);
     } catch (e) {
       console.error("Nuk u gjet përdoruesi i bounty:", e);
-      return interaction.reply({ content: "Nuk u gjet personi për të ngre dolli 😅", ephemeral: true });
+      return interaction.reply({ 
+        content: "Nuk u gjet personi për të ngre dolli 😅", 
+        ephemeral: true 
+      });
     }
 
+    // Nuk lejojmë dolli për veten
     if (clicker.id === bountyUser.id) {
-      return interaction.reply({ content: "Dikush tjetër duhet të ngre dolli për ty 🍺", ephemeral: true });
+      return interaction.reply({ 
+        content: "Dikush tjetër duhet të ngre dolli për ty 🍺", 
+        ephemeral: true 
+      });
     }
 
+    // Zgjedh mesazhin rastësor
     const randomIndex = Math.floor(Math.random() * dolliMessages.length);
     const messageTemplate = dolliMessages[randomIndex];
-    const message = messageTemplate.replace("{0}", clicker.toString()).replace("{1}", bountyUser.toString());
+    const message = messageTemplate
+      .replace("{0}", clicker.toString())
+      .replace("{1}", bountyUser.toString());
 
+    // Shto berries për të dy
     await addBerries(clicker.id, 5);
     await addBerries(bountyUser.id, 5);
 
-    // Këtu, do të përdorim `reply` sepse mesazhi është publik
-    await interaction.reply({ content: message, ephemeral: false });
+    // Dërgo publikisht në kanal
+    await interaction.channel.send(message);
+
+    // Përgjigje për të mbyllur interaction-in (pa mesazh tjetër)
+    await interaction.deferUpdate();
   },
 };
