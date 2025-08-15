@@ -30,9 +30,7 @@ module.exports = {
   },
   async execute(interaction) {
     const clicker = interaction.member;
-    const customId = interaction.customId;
-
-    const bountyUserId = customId.split(":")[1];
+    const bountyUserId = interaction.customId.split(":")[1];
 
     let bountyUser;
     try {
@@ -45,7 +43,7 @@ module.exports = {
       });
     }
 
-    // Nuk lejojmë dolli për veten
+    // Kontroll për vetveten
     if (clicker.id === bountyUser.id) {
       return interaction.reply({ 
         content: "Dikush tjetër duhet të ngre dolli për ty 🍺", 
@@ -53,21 +51,24 @@ module.exports = {
       });
     }
 
-    // Zgjedh mesazhin rastësor
-    const randomIndex = Math.floor(Math.random() * dolliMessages.length);
-    const messageTemplate = dolliMessages[randomIndex];
+    // Mesazh publik i personalizuar
+    const messageTemplate = dolliMessages[Math.floor(Math.random() * dolliMessages.length)];
     const message = messageTemplate
       .replace("{0}", clicker.toString())
       .replace("{1}", bountyUser.toString());
 
-    // Shto berries për të dy
+    // Shto pikët
     await addBerries(clicker.id, 5);
     await addBerries(bountyUser.id, 5);
 
-    // Dërgo publikisht në kanal
+    // Dërgo mesazhin publikisht në kanal, jo me reply
     await interaction.channel.send(message);
 
-    // Përgjigje për të mbyllur interaction-in (pa mesazh tjetër)
-    await interaction.deferUpdate();
+    // Përgjigje bosh për të mbyllur interaction
+    if (interaction.deferred || interaction.replied) {
+      // nëse është deferuar më parë, mos bë asgjë
+    } else {
+      await interaction.deferUpdate();
+    }
   },
 };
