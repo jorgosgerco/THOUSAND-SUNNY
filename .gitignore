@@ -1,0 +1,9 @@
+# dependencies
+/node_modules
+
+# fajllat me te dhena private ose sensitive
+.env
+
+# fajllat e konfigurimit te npm
+npm-debug.log*
+package-lock.json
