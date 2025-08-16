@@ -1,28 +1,39 @@
-// commands/bountyCommand.js
 const { SlashCommandBuilder } = require("discord.js");
-const { createBountyMessage } = require("../utils/bountyResponse.js"); // E importojmë funksionin e ri
+const { createBountyMessage } = require("../utils/bountyResponse.js"); // Funksioni që gjeneron bounty
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("bounty")
     .setDescription("Shiko bounty e një anëtari")
     .addUserOption(option =>
-      option.setName("user")
+      option
+        .setName("user")
         .setDescription("Zgjidh anëtarin")
         .setRequired(false)
     ),
-  async execute(interaction) {
-    const member = interaction.options.getMember("user") || interaction.member;
 
+  async execute(interaction) {
+    // Merr user-in ose përdoruesin që ekzekuton komandën
+    const user = interaction.options.getUser("user") || interaction.user;
+
+    // Mund të marrësh edhe member nëse është në guild
+    const member = interaction.guild?.members.cache.get(user.id);
+
+    // Njofton Discord që do të përgjigjesh pas pak
     await interaction.deferReply();
 
     try {
-      const messagePayload = await createBountyMessage(member);
+      // Gjenero payload-in e mesazhit
+      const messagePayload = await createBountyMessage(member || user);
+
+      // Dërgo përgjigjen
       await interaction.editReply(messagePayload);
 
     } catch (error) {
       console.error("Gabim gjatë ekzekutimit të komandës:", error);
-      await interaction.editReply({ content: "Pati një gabim të papritur!", ephemeral: true });
+
+      // Jep një përgjigje fallback (pa ephemeral që të mos ngecë)
+      await interaction.editReply("Pati një gabim të papritur!");
     }
   },
 };
