@@ -21,6 +21,10 @@ module.exports = {
         berriesToAdd = 8;
       }
 
+            if (currentBerries > 5000) {
+        berriesToAdd = 8;
+      }
+
       await addBerries(userId, berriesToAdd, message.channel);
       lastMessageTimes.set(userId, currentTime);
     }

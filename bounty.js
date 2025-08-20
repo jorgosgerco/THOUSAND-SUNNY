@@ -56,12 +56,13 @@ async function addBerries(userId, amount, channel) {
   data[userId].lastActive = Date.now();
   await saveBerriesData(data);
 
-  if (newAmount > 0 && newAmount % 1000 === 0) {
-    const userObject = channel.guild.members.cache.get(userId);
-    if (userObject) {
-      await bountyMilestoneEvent.execute(channel.client, userObject, newAmount, channel);
-    }
+if (newAmount >= 1000 && Math.floor(newAmount / 1000) > Math.floor(current / 1000)) {
+  const userObject = channel.guild.members.cache.get(userId);
+  if (userObject) {
+    await bountyMilestoneEvent.execute(channel.client, userObject, newAmount, channel);
   }
+}
+
 
   return newAmount;
 }
