@@ -1,7 +1,7 @@
 // events/messageReactionAdd.js
-const { addBerries } = require("../bounty.js");
+const { addBerries, getBerries } = require("../bounty.js");
 
-// Kjo map do të jetë unike për këtë event
+// Map për cooldown
 const lastReactionTimes = new Map();
 
 module.exports = {
@@ -15,7 +15,24 @@ module.exports = {
     const lastTime = lastReactionTimes.get(userId) || 0;
 
     if (currentTime - lastTime > 10000) {
-      await addBerries(userId, 5);
+      const currentBerries = await getBerries(userId);
+      let berriesToAdd = 5; // default
+
+      // 🔹 Option 1: step-based scaling
+      if (currentBerries > 5000 && currentBerries <= 10000) {
+        berriesToAdd = 4;
+      } else if (currentBerries > 10000 && currentBerries <= 20000) {
+        berriesToAdd = 3;
+      } else if (currentBerries > 20000 && currentBerries <= 50000) {
+        berriesToAdd = 2;
+      } else if (currentBerries > 50000) {
+        berriesToAdd = 1;
+      }
+
+      // 🔹 Option 2: formula-based scaling (comment out above if you prefer this)
+      // berriesToAdd = Math.max(1, 5 - Math.floor(currentBerries / 5000));
+
+      await addBerries(userId, berriesToAdd, reaction.message.channel);
       lastReactionTimes.set(userId, currentTime);
     }
   },

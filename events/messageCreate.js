@@ -13,20 +13,17 @@ module.exports = {
     const currentTime = Date.now();
     const lastTime = lastMessageTimes.get(userId) || 0;
 
-    if (currentTime - lastTime > 30000) {
-      const currentBerries = await getBerries(userId);
-      let berriesToAdd = 10;
+    
+if (currentTime - lastTime > 30000) {
+  const currentBerries = await getBerries(userId);
 
-      if (currentBerries > 5000) {
-        berriesToAdd = 8;
-      }
+  // Base reward is 10, but decreases as berries increase
+  let berriesToAdd = Math.max(2, 10 - Math.floor(currentBerries / 5000));
 
-            if (currentBerries > 5000) {
-        berriesToAdd = 8;
-      }
+  await addBerries(userId, berriesToAdd, message.channel);
+  lastMessageTimes.set(userId, currentTime);
+}
 
-      await addBerries(userId, berriesToAdd, message.channel);
-      lastMessageTimes.set(userId, currentTime);
-    }
+
   },
 };
