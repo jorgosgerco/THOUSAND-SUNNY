@@ -21,7 +21,8 @@ module.exports = {
             .replace("{berries}", newBerries);
 
         // Krijon posterin e bounty me te dhenat e reja
-        const messagePayload = await createBountyMessage(user, channel);
+        // The error was here. 'createBountyMessage' only expects one argument.
+        const messagePayload = await createBountyMessage(user);
 
         // Dërgon mesazhin dhe posterin në kanal
         if (channel) {
