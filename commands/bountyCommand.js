@@ -1,39 +1,43 @@
+// bounty.js
 const { SlashCommandBuilder } = require("discord.js");
-const { createBountyMessage } = require("../utils/bountyResponse.js"); // Funksioni që gjeneron bounty
+const { createBountyMessage } = require("../utils/bountyResponse.js");
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName("bounty")
-    .setDescription("Shiko bounty e një anëtari")
-    .addUserOption(option =>
-      option
-        .setName("user")
-        .setDescription("Zgjidh anëtarin")
-        .setRequired(false)
-    ),
+    data: new SlashCommandBuilder()
+        .setName("bounty")
+        .setDescription("Shiko bounty e një anëtari")
+        .addUserOption(option =>
+            option
+                .setName("user")
+                .setDescription("Zgjidh anëtarin")
+                .setRequired(false)
+        ),
 
-  async execute(interaction) {
-    // Merr user-in ose përdoruesin që ekzekuton komandën
-    const user = interaction.options.getUser("user") || interaction.user;
+    async execute(interaction) {
+        // Log the start of the command execution
+        console.log(`[LOG] Starting bounty command execution for user: ${interaction.user.tag}`);
 
-    // Mund të marrësh edhe member nëse është në guild
-    const member = interaction.guild?.members.cache.get(user.id);
+        const user = interaction.options.getUser("user") || interaction.user;
+        const member = interaction.guild?.members.cache.get(user.id);
 
-    // Njofton Discord që do të përgjigjesh pas pak
-    await interaction.deferReply();
+        await interaction.deferReply();
 
-    try {
-      // Gjenero payload-in e mesazhit
-      const messagePayload = await createBountyMessage(member || user);
+        try {
+            // Log the start of the bounty message creation
+            console.log(`[LOG] Creating bounty message payload for user ID: ${user.id}`);
 
-      // Dërgo përgjigjen
-      await interaction.editReply(messagePayload);
+            const messagePayload = await createBountyMessage(member || user);
 
-    } catch (error) {
-      console.error("Gabim gjatë ekzekutimit të komandës:", error);
+            // Log a successful message payload creation
+            console.log(`[LOG] Successfully created message payload. Replying to interaction.`);
 
-      // Jep një përgjigje fallback (pa ephemeral që të mos ngecë)
-      await interaction.editReply("Pati një gabim të papritur!");
-    }
-  },
+            await interaction.editReply(messagePayload);
+
+        } catch (error) {
+            // Log any errors that occur
+            console.error(`[ERROR] Gabim gjatë ekzekutimit të komandës 'bounty':`, error);
+
+            await interaction.editReply("Pati një gabim të papritur!");
+        }
+    },
 };
