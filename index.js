@@ -2,7 +2,11 @@
 const fs = require("fs");
 const path = require("path");
 const { Client, GatewayIntentBits, Partials, Collection } = require("discord.js");
+const { REST, Routes } = require("discord.js");
 require("dotenv").config();
+
+// Load the database setup function
+const setupDatabase = require('./database/setupDatabase.js');
 
 // Initialize the bot client with necessary intents and partials
 const client = new Client({
@@ -17,7 +21,7 @@ const client = new Client({
 });
 
 // Create Collections to store commands, buttons, and events
-client.commands = new Collection(); 
+client.commands = new Collection();
 client.prefixCommands = new Collection();
 client.buttons = new Collection();
 client.events = new Collection();
@@ -55,7 +59,7 @@ for (const file of buttonFiles) {
     }
 }
 
-// --- Event Loader (UPDATED WITH TRY/CATCH) ---
+// --- Event Loader ---
 const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
@@ -82,11 +86,10 @@ for (const file of eventFiles) {
 }
 
 // --- Slash Command Deployment ---
-const { REST, Routes } = require("discord.js");
 (async () => {
-    const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
     try {
         console.log("Started refreshing application (/) commands.");
+        const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
         await rest.put(
             Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands }
@@ -97,53 +100,13 @@ const { REST, Routes } = require("discord.js");
     }
 })();
 
-// --- Event Handlers (Already had try/catch, unchanged) ---
-client.on("interactionCreate", async interaction => {
-    if (interaction.isChatInputCommand()) {
-        const command = interaction.client.commands.get(interaction.commandName);
-        if (!command) return;
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
-        }
-        return;
-    }
-
-    if (interaction.isButton()) {
-        const buttonName = interaction.customId.split(":")[0];
-        const button = interaction.client.buttons.get(buttonName);
-        if (!button) return;
-        try {
-            await button.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            await interaction.reply({ content: "There was an error while executing this button!", ephemeral: true });
-        }
-        return;
-    }
-});
-
-client.on("messageCreate", async message => {
-    const prefix = "!";
-
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-
-    const command = client.prefixCommands.get(commandName);
-
-    if (!command) return;
-
-    try {
-        await command.execute(message, args);
-    } catch (error) {
-        console.error(error);
-        message.reply('Pati një gabim gjatë ekzekutimit të kësaj komande.');
-    }
-});
-
 // --- Final Login ---
-client.login(process.env.TOKEN);
+async function startBot() {
+    console.log("Setting up database...");
+    await setupDatabase();
+    console.log("Database setup complete. Logging in to Discord.");
+
+    client.login(process.env.TOKEN);
+}
+
+startBot();

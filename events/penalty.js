@@ -2,13 +2,11 @@
 const { Events } = require('discord.js');
 const { applyPenalties } = require('../bounty.js');
 
-// hasExecuted isn't needed here
-
 module.exports = {
     name: Events.ClientReady,
     once: true,
     async execute(client) {
-        const checkInterval = 24 * 60 * 60 * 1000; // 24 ore ne milisekonda
+        const checkInterval = 24 * 60 * 60 * 1000;
 
         const checkForPenalties = async () => {
             console.log('START: Duke kontrolluar per perdorues inaktive...');
@@ -20,11 +18,6 @@ module.exports = {
             }
             console.log('END: Kontrolli i penalltive u mbyll.');
         };
-
-        // This will run the function for the first time after 24 hours,
-        // and then continue to run it every 24 hours thereafter.
-        // For testing purposes, you can uncomment the line below to run it immediately
-        // checkForPenalties(); 
         
         setInterval(checkForPenalties, checkInterval);
 

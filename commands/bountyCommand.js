@@ -1,43 +1,42 @@
-// bounty.js
+// commands/bountyCommand.js
 const { SlashCommandBuilder } = require("discord.js");
 const { createBountyMessage } = require("../utils/bountyResponse.js");
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName("bounty")
-        .setDescription("Shiko bounty e një anëtari")
-        .addUserOption(option =>
-            option
-                .setName("user")
-                .setDescription("Zgjidh anëtarin")
-                .setRequired(false)
-        ),
+    data: new SlashCommandBuilder()
+        .setName("bounty")
+        .setDescription("Shiko bounty e një anëtari")
+        .addUserOption(option =>
+            option
+                .setName("user")
+                .setDescription("Zgjidh anëtarin")
+                .setRequired(false)
+        ),
 
-    async execute(interaction) {
-        // Log the start of the command execution
-        console.log(`[LOG] Starting bounty command execution for user: ${interaction.user.tag}`);
+    async execute(interaction) {
+        // Deferring the reply as the first action to prevent timeout.
+        await interaction.deferReply();
 
-        const user = interaction.options.getUser("user") || interaction.user;
-        const member = interaction.guild?.members.cache.get(user.id);
+        try {
+            // Get the user from the command option, or default to the interaction user.
+            const user = interaction.options.getUser("user") || interaction.user;
+            const member = interaction.guild?.members.cache.get(user.id);
+            
+            const messagePayload = await createBountyMessage(member || user);
 
-        await interaction.deferReply();
+            if (messagePayload) {
+                await interaction.editReply(messagePayload);
+            } else {
+                await interaction.editReply("Pati një gabim gjatë krijimit të posterit! Ju lutem provoni përsëri më vonë.");
+            }
 
-        try {
-            // Log the start of the bounty message creation
-            console.log(`[LOG] Creating bounty message payload for user ID: ${user.id}`);
-
-            const messagePayload = await createBountyMessage(member || user);
-
-            // Log a successful message payload creation
-            console.log(`[LOG] Successfully created message payload. Replying to interaction.`);
-
-            await interaction.editReply(messagePayload);
-
-        } catch (error) {
-            // Log any errors that occur
-            console.error(`[ERROR] Gabim gjatë ekzekutimit të komandës 'bounty':`, error);
-
-            await interaction.editReply("Pati një gabim të papritur!");
-        }
-    },
+        } catch (error) {
+            console.error(`Gabim gjatë ekzekutimit të komandës 'bounty':`, error);
+            if (!interaction.deferred && !interaction.replied) {
+                await interaction.reply("Pati një gabim të papritur!");
+            } else {
+                await interaction.editReply("Pati një gabim të papritur!");
+            }
+        }
+    },
 };
